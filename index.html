@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>voyai — AI Travel Operations</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f3;
+    --bg-tertiary: #eeede9;
+    --text-primary: #1a1a18;
+    --text-secondary: #5a5a56;
+    --text-tertiary: #9a9a94;
+    --border-light: rgba(0,0,0,0.1);
+    --border-mid: rgba(0,0,0,0.18);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --green-bg: #EAF3DE;
+    --green-text: #27500A;
+    --blue-bg: #E6F1FB;
+    --blue-text: #0C447C;
+    --amber-bg: #FAEEDA;
+    --amber-text: #633806;
+    --red-bg: #FCEBEB;
+    --red-text: #791F1F;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #1c1c1a;
+      --bg-secondary: #252523;
+      --bg-tertiary: #2e2e2b;
+      --text-primary: #f0efe9;
+      --text-secondary: #a8a89e;
+      --text-tertiary: #6a6a64;
+      --border-light: rgba(255,255,255,0.08);
+      --border-mid: rgba(255,255,255,0.15);
+      --green-bg: #173404;
+      --green-text: #C0DD97;
+      --blue-bg: #042C53;
+      --blue-text: #B5D4F4;
+      --amber-bg: #412402;
+      --amber-text: #FAC775;
+      --red-bg: #501313;
+      --red-text: #F7C1C1;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+  .serif { font-family: 'DM Serif Display', serif; }
+  .serif-i { font-family: 'DM Serif Display', serif; font-style: italic; }
+
+  /* NAV */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem; height: 54px;
+    background: var(--bg-primary);
+    border-bottom: 0.5px solid var(--border-light);
+  }
+  .brand { font-family: 'DM Serif Display', serif; font-size: 20px; cursor: pointer; }
+  .brand i { font-style: italic; color: var(--text-secondary); }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; border: 0.5px solid transparent; text-decoration: none; }
+  .btn-ghost { background: transparent; color: var(--text-secondary); border-color: transparent; }
+  .btn-ghost:hover { background: var(--bg-secondary); color: var(--text-primary); }
+  .btn-outline { background: transparent; color: var(--text-primary); border-color: var(--border-mid); }
+  .btn-outline:hover { background: var(--bg-secondary); }
+  .btn-solid { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+  .btn-solid:hover { opacity: 0.85; }
+  .btn-lg { padding: 11px 24px; font-size: 14px; border-radius: var(--radius-md); }
+
+  /* APP TABS */
+  .app-tabs {
+    display: none; align-items: center; gap: 0;
+    padding: 0 2rem;
+    border-bottom: 0.5px solid var(--border-light);
+    background: var(--bg-primary);
+  }
+  .app-tabs.visible { display: flex; }
+  .tab {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 16px; font-size: 13px; font-family: inherit;
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text-tertiary);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+    transition: all 0.12s;
+  }
+  .tab.active { color: var(--text-primary); font-weight: 500; border-bottom-color: var(--text-primary); }
+  .tab:hover:not(.active) { color: var(--text-secondary); }
+
+  /* SCREENS */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* LANDING */
+  .hero { max-width: 700px; margin: 0 auto; padding: 4rem 2rem 3rem; text-align: center; }
+  .eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 1.25rem; }
+  .hero-title { font-family: 'DM Serif Display', serif; font-size: 46px; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1.25rem; }
+  .hero-title i { font-style: italic; color: var(--text-secondary); }
+  .hero-sub { font-size: 16px; color: var(--text-secondary); max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.65; font-weight: 300; }
+  .hero-cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 600px; margin: 3rem auto; }
+  .stat-card { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1.25rem; text-align: center; }
+  .stat-val { font-size: 28px; font-weight: 500; font-family: 'DM Serif Display', serif; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--text-tertiary); }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 700px; margin: 0 auto 3rem; padding: 0 2rem; }
+  .feature-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .feature-icon { font-size: 22px; color: var(--text-tertiary); margin-bottom: 10px; }
+  .feature-title { font-size: 13px; font-weight: 500; margin-bottom: 5px; }
+  .feature-desc { font-size: 12px; color: var(--text-tertiary); line-height: 1.55; }
+  .trust-bar { text-align: center; padding: 1.5rem 2rem 3rem; }
+  .trust-text { font-size: 12px; color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .trust-dot { width: 6px; height: 6px; border-radius: 50%; background: #639922; flex-shrink: 0; }
+
+  /* AUTH */
+  .auth-wrap { max-width: 420px; margin: 2.5rem auto; padding: 0 1rem; }
+  .auth-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 2rem; }
+  .auth-brand { text-align: center; margin-bottom: 1.75rem; }
+  .auth-brand .brand { font-size: 26px; display: block; margin-bottom: 6px; }
+  .auth-title { font-size: 14px; color: var(--text-secondary); }
+  .auth-sub { font-size: 12px; color: var(--text-tertiary); }
+  .sso-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 9px; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer; border-radius: var(--radius-md); border: 0.5px solid var(--border-mid); background: var(--bg-primary); color: var(--text-primary); margin-bottom: 8px; transition: background 0.12s; }
+  .sso-btn:hover { background: var(--bg-secondary); }
+  .or-divider { display: flex; align-items: center; gap: 10px; margin: 1rem 0; font-size: 12px; color: var(--text-tertiary); }
+  .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 0.5px; background: var(--border-light); }
+  .form-group { margin-bottom: 0.85rem; }
+  .form-label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+  .form-label span { color: var(--text-tertiary); font-weight: 400; }
+  input, select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 13px; font-family: inherit;
+    background: var(--bg-primary); color: var(--text-primary);
+    border: 0.5px solid var(--border-mid); border-radius: var(--radius-md);
+    outline: none; transition: border-color 0.12s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--text-primary); }
+  textarea { resize: vertical; min-height: 72px; }
+  .checkbox-row { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: var(--text-secondary); cursor: pointer; margin-bottom: 1rem; }
+  .checkbox-row input { width: auto; margin-top: 2px; }
+  .auth-switch { text-align: center; margin-top: 1.25rem; font-size: 12px; color: var(--text-tertiary); }
+  .auth-switch a { color: var(--text-primary); font-weight: 500; cursor: pointer; }
+  .forgot { display: block; text-align: right; font-size: 12px; color: var(--text-tertiary); margin-bottom: 1rem; cursor: pointer; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* APP LAYOUT */
+  .app-body { max-width: 900px; margin: 0 auto; padding: 1.75rem 1.5rem; }
+  .page-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--text-tertiary); background: var(--bg-secondary); border-radius: var(--radius-md); padding: 5px 10px; margin-bottom: 1.5rem; }
+  .progress-steps { display: flex; margin-bottom: 2rem; }
+  .p-step { flex: 1; text-align: center; font-size: 11px; color: var(--text-tertiary); position: relative; padding-top: 30px; }
+  .p-step::before { content: ''; position: absolute; top: 8px; left: 0; right: 0; height: 2px; background: var(--bg-secondary); }
+  .p-step:first-child::before { left: 50%; }
+  .p-step:last-child::before { right: 50%; }
+  .p-step-dot { position: absolute; top: 1px; left: 50%; transform: translateX(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--bg-secondary); border: 0.5px solid var(--border-mid); z-index: 1; display: flex; align-items: center; justify-content: center; font-size: 9px; color: var(--text-tertiary); }
+  .p-step.done .p-step-dot { background: var(--text-primary); border-color: var(--text-primary); color: var(--bg-primary); }
+  .p-step.done { color: var(--text-secondary); }
+  .p-step.active .p-step-dot { background: var(--bg-primary); border: 2px solid var(--text-primary); color: var(--text-primary); font-weight: 500; }
+  .p-step.active { color: var(--text-primary); font-weight: 500; }
+  .app-grid { display: grid; grid-template-columns: 1fr 280px; gap: 1.25rem; align-items: start; }
+  .card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: var(--text-secondary); margin-bottom: 1.25rem; line-height: 1.5; }
+  .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+  .sidebar-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 1rem; }
+  .sidebar-label { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.75rem; }
+  .upload-zone { border: 0.5px dashed var(--border-mid); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; transition: background 0.12s; }
+  .upload-zone:hover { background: var(--bg-secondary); }
+  .upload-icon { font-size: 24px; color: var(--text-tertiary); margin-bottom: 6px; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; background: var(--bg-secondary); border: 0.5px solid var(--border-light); color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; }
+  .proj-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 0.5px solid var(--border-light); }
+  .proj-row:last-child { border-bottom: none; }
+  .proj-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .proj-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .proj-meta { font-size: 11px; color: var(--text-tertiary); }
+  .step-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 0.75rem; }
+  .step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-secondary); border: 0.5px solid var(--border-light); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .step-text b { color: var(--text-primary); font-weight: 500; }
+  .divider { height: 0.5px; background: var(--border-light); margin: 1.25rem 0; }
+
+  /* BADGES */
+  .badge { font-size: 10px; font-weight: 500; padding: 3px 8px; border-radius: 99px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
+  .badge-green { background: var(--green-bg); color: var(--green-text); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-red { background: var(--red-bg); color: var(--red-text); }
+  .badge-gray { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  /* METRICS */
+  .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .metric { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 0.9rem; }
+  .metric-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin-bottom: 4px; }
+  .metric-val { font-size: 22px; font-weight: 500; }
+  .metric-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* ALERTS */
+  .alert { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: var(--radius-md); margin-bottom: 10px; font-size: 12px; line-height: 1.5; }
+  .alert-success { background: var(--green-bg); color: var(--green-text); border: 0.5px solid #97C459; }
+  .alert-warn { background: var(--amber-bg); color: var(--amber-text); border: 0.5px solid #EF9F27; }
+  .alert i { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+  /* TABLE */
+  .tbl-wrap { width: 100%; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { font-size: 10px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-tertiary); padding: 8px 10px; text-align: left; border-bottom: 0.5px solid var(--border-light); white-space: nowrap; }
+  td { padding: 9px 10px; border-bottom: 0.5px solid var(--border-light); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg-secondary); }
+
+  /* AVATARS */
+  .av { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; flex-shrink: 0; }
+  .av-a { background: #E6F1FB; color: #0C447C; }
+  .av-b { background: #E1F5EE; color: #085041; }
+  .av-c { background: #FAECE7; color: #712B13; }
+  .av-d { background: #EEEDFE; color: #3C3489; }
+  .av-e { background: #FAEEDA; color: #633806; }
+  .av-f { background: #EAF3DE; color: #27500A; }
+
+  /* PROGRESS */
+  .prog-wrap { margin-bottom: 1.5rem; }
+  .prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; color: var(--text-tertiary); }
+  .prog-track { height: 5px; background: var(--bg-secondary); border-radius: 99px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 99px; background: var(--text-primary); transition: width 0.5s ease; }
+
+  /* TRACKER */
+  .conf-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border-light); font-size: 13px; }
+  .conf-row:last-child { border-bottom: none; }
+  .conf-input { width: 150px; font-size: 12px; padding: 5px 9px; }
+  .amount-box { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 1rem; margin-top: 1rem; }
+  .amount-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; color: var(--text-secondary); }
+  .amount-row.total { font-weight: 500; color: var(--text-primary); padding-top: 10px; margin-top: 6px; border-top: 0.5px solid var(--border-light); font-size: 15px; }
+
+  /* ACCOUNT */
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .plan-card { border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .plan-card.featured { border: 2px solid #378ADD; }
+  .plan-price { font-size: 22px; font-weight: 500; margin-top: 8px; }
+  .plan-price span { font-size: 12px; font-weight: 400; color: var(--text-tertiary); }
+  .plan-name { font-size: 15px; font-weight: 500; }
+  .plan-desc { font-size: 12px; color: var(--text-secondary); margin: 4px 0 10px; }
+
+  /* FULL WIDTH BTN */
+  .btn-full { width: 100%; }
+  .mt-1 { margin-top: 1rem; }
+  .mb-1 { margin-bottom: 1rem; }
+  .a-link { color: var(--text-primary); font-weight: 500; cursor: pointer; text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .hero-title { font-size: 32px; }
+    .stats-row, .features, .metric-grid, .app-grid, .plan-grid { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .app-grid { grid-template-columns: 1fr; }
+    .nav { padding: 0 1rem; }
+    .app-body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand" onclick="showScreen('landing')"><b>voy</b><i>ai</i></div>
+  <div class="nav-right" id="nav-public">
+    <button class="btn btn-ghost" onclick="showScreen('login')">Log in</button>
+    <button class="btn btn-solid" onclick="showScreen('signup')">Get started</button>
+  </div>
+  <div class="nav-right" id="nav-app" style="display:none">
+    <span style="font-size:12px;color:var(--text-tertiary)">Laura Simmons</span>
+    <div class="av av-d" style="width:28px;height:28px;font-size:10px;cursor:pointer" onclick="showAppTab('account')">LS</div>
+  </div>
+</nav>
+
+<div class="app-tabs" id="app-tabs">
+  <button class="tab active" id="tab-builder" onclick="showAppTab('builder')">
+    <i class="ti ti-layout-list"></i> Trip builder
+  </button>
+  <button class="tab" id="tab-report" onclick="showAppTab('report')">
+    <i class="ti ti-file-text"></i> AI report
+  </button>
+  <button class="tab" id="tab-tracker" onclick="showAppTab('tracker')">
+    <i class="ti ti-chart-bar"></i> Booking tracker
+  </button>
+  <button class="tab" id="tab-account" onclick="showAppTab('account')">
+    <i class="ti ti-settings"></i> Account
+  </button>
+</div>
+
+<!-- LANDING -->
+<div id="screen-landing" class="screen active">
+  <div class="hero">
+    <div class="eyebrow">AI travel operations</div>
+    <h1 class="hero-title">Move your crew <i>anywhere.</i><br>Without the chaos.</h1>
+    <p class="hero-sub">Upload your staff list, set your destination and budget. Your AI travel agent scans every option and delivers a ready-to-book plan in minutes.</p>
+    <div class="hero-cta">
+      <button class="btn btn-solid btn-lg" onclick="showScreen('signup')">
+        Start free trial <i class="ti ti-arrow-right"></i>
+      </button>
+      <button class="btn btn-outline btn-lg" onclick="showScreen('login')">Log in</button>
+    </div>
+  </div>
+  <div class="stats-row" style="padding:0 2rem">
+    <div class="stat-card"><div class="stat-val">94%</div><div class="stat-label">Reduction in research time</div></div>
+    <div class="stat-card"><div class="stat-val">£640</div><div class="stat-label">Average saving per deployment</div></div>
+    <div class="stat-card"><div class="stat-val">60+</div><div class="stat-label">Travellers per report</div></div>
+  </div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon"><i class="ti ti-users"></i></div>
+      <div class="feature-title">Multi-origin groups</div>
+      <div class="feature-desc">Coordinate 60 staff from 20 cities into one optimised plan</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="ti ti-sparkles"></i></div>
+      <div class="feature-title">AI recommendations</div>
+      <div class="feature-desc">Best options ranked by cost, timing, and risk — with reasoning</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="ti ti-link"></i></div>
+      <div class="feature-title">One-click booking</div>
+      <div class="feature-desc">Direct pre-filled links to book each traveller in seconds</div>
+    </div>
+  </div>
+  <div class="trust-bar">
+    <div class="trust-text">
+      <div class="trust-dot"></div>
+      Built for film productions, sports tours, and event companies
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand"><b>voy</b><i>ai</i></span>
+        <div class="auth-title">Welcome back</div>
+      </div>
+      <button class="sso-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+      <button class="sso-btn"><i class="ti ti-brand-microsoft"></i> Continue with Microsoft</button>
+      <div class="or-divider">or</div>
+      <div class="form-group"><label class="form-label">Work email</label><input type="email" placeholder="you@company.com"></div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" placeholder="••••••••"></div>
+      <a class="forgot">Forgot password?</a>
+      <button class="btn btn-solid btn-full" onclick="goToApp()">Sign in <i class="ti ti-arrow-right"></i></button>
+      <div class="auth-switch">No account? <a onclick="showScreen('signup')">Get started free</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGN UP -->
+<div id="screen-signup" class="screen">
+  <div class="auth-wrap" style="max-width:500px">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand"><b>voy</b><i>ai</i></span>
+        <div class="auth-title">Start your free trial</div>
+        <div class="auth-sub">No credit card required · 14-day free trial</div>
+      </div>
+      <button class="sso-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign up with Google
+      </button>
+      <div class="or-divider">or</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">First name</label><input type="text" placeholder="Laura"></div>
+        <div class="form-group"><label class="form-label">Last name</label><input type="text" placeholder="Simmons"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Work email</label><input type="email" placeholder="you@company.com"></div>
+      <div class="form-group"><label class="form-label">Company / production name</label><input type="text" placeholder="e.g. Archipelago Productions"></div>
+      <div class="form-group">
+        <label class="form-label">Industry</label>
+        <select>
+          <option>Film & TV production</option>
+          <option>Sports & athletics</option>
+          <option>Live events & festivals</option>
+          <option>Touring & music</option>
+          <option>Corporate & enterprise</option>
+          <option>NGO / humanitarian</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Password</label><input type="password" placeholder="Min. 8 characters"></div>
+      <label class="checkbox-row"><input type="checkbox"> I agree to the <a class="a-link" href="#">Terms of Service</a> and <a class="a-link" href="#">Privacy Policy</a></label>
+      <button class="btn btn-solid btn-full" onclick="goToApp()">Create account <i class="ti ti-arrow-right"></i></button>
+      <div class="auth-switch">Already have an account? <a onclick="showScreen('login')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="screen-app" class="screen">
+
+  <!-- BUILDER -->
+  <div id="content-builder" class="app-body">
+    <div class="page-badge"><i class="ti ti-layout-list" style="font-size:10px"></i> Step 1 of 3 — trip brief</div>
+    <div class="progress-steps">
+      <div class="p-step done"><div class="p-step-dot"><i class="ti ti-check" style="font-size:9px"></i></div>Account</div>
+      <div class="p-step active"><div class="p-step-dot" style="font-weight:500;font-size:10px">2</div>Trip brief</div>
+      <div class="p-step"><div class="p-step-dot" style="font-size:10px">3</div>AI report</div>
+      <div class="p-step"><div class="p-step-dot" style="font-size:10px">4</div>Tracker</div>
+    </div>
+    <div class="app-grid">
+      <div>
+        <div class="card">
+          <div class="card-title">Project details</div>
+          <div class="card-sub">Basic information about this deployment</div>
+          <div class="form-group"><label class="form-label">Project name</label><input type="text" value="Archipelago — Season 2"></div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Destination city</label><input type="text" value="London, UK"></div>
+            <div class="form-group"><label class="form-label">Arrival venue <span>(optional)</span></label><input type="text" placeholder="e.g. Pinewood Studios"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Dates & timing</div>
+          <div class="card-sub">When does everyone need to arrive?</div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Arrival date</label><input type="text" value="14 June 2026"></div>
+            <div class="form-group"><label class="form-label">Must arrive by</label><input type="text" value="18:00 BST"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Staff list</div>
+          <div class="card-sub">Upload a CSV or the AI will ask you for details</div>
+          <div class="upload-zone mb-1">
+            <div class="upload-icon"><i class="ti ti-upload"></i></div>
+            <div style="font-size:13px;color:var(--text-secondary)">Drop your staff CSV here</div>
+            <div style="font-size:11px;color:var(--text-tertiary);margin-top:3px">.csv or .xlsx · name, departure_city, role</div>
+          </div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px">6 travellers loaded from sample</div>
+          <div class="tag-row">
+            <span class="tag"><i class="ti ti-user" style="font-size:10px"></i>James · Edinburgh</span>
+            <span class="tag"><i class="ti ti-user" style="font-size:10px"></i>Sofia · Paris</span>
+            <span class="tag"><i class="ti ti-user" style="font-size:10px"></i>Marco · Milan</span>
+            <span class="tag"><i class="ti ti-user" style="font-size:10px"></i>Aisha · Dubai</span>
+            <span class="tag"><i class="ti ti-user" style="font-size:10px"></i>Tom · Amsterdam</span>
+            <span class="tag"><i class="ti ti-user" style="font-size:10px"></i>Lucia · Barcelona</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Budget & preferences</div>
+          <div class="card-sub">Set spending limits and travel rules</div>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label">Budget per person</label><input type="text" value="£600"></div>
+            <div class="form-group"><label class="form-label">Default class</label><select><option>Economy</option><option>Premium economy</option><option>Business</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Date flexibility</label><select><option>Fixed date only</option><option>±1 day flexibility</option><option>±3 days flexibility</option></select></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Special requirements <span>(optional)</span></label><textarea placeholder="e.g. Aisha requires business class. Marco has excess baggage.">Aisha requires business class per contract. Marco has excess baggage (camera equipment).</textarea></div>
+        </div>
+        <button class="btn btn-solid btn-full" onclick="showAppTab('report')" style="padding:12px">
+          <i class="ti ti-sparkles"></i> Generate AI travel plan
+        </button>
+      </div>
+      <div class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-label">Recent projects</div>
+          <div class="proj-row"><div class="proj-dot" style="background:#639922"></div><div style="flex:1"><div class="proj-name">Northlight — Ep 4</div><div class="proj-meta">12 travellers</div></div><span class="badge badge-green">Done</span></div>
+          <div class="proj-row"><div class="proj-dot" style="background:#378ADD"></div><div style="flex:1"><div class="proj-name">Monaco Grand Prix</div><div class="proj-meta">34 travellers</div></div><span class="badge badge-blue">Active</span></div>
+          <div class="proj-row"><div class="proj-dot" style="background:#BA7517"></div><div style="flex:1"><div class="proj-name">Summit Conference</div><div class="proj-meta">8 travellers</div></div><span class="badge badge-amber">Draft</span></div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-label">How it works</div>
+          <div class="step-row"><div class="step-num">1</div><div class="step-text"><b>Upload your crew</b> — names and departure cities</div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-text"><b>Set destination and budget</b> — AI handles the rest</div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-text"><b>Review the plan</b> — one-click links to book each traveller</div></div>
+          <div class="step-row" style="margin-bottom:0"><div class="step-num">4</div><div class="step-text"><b>Track bookings</b> — live dashboard and finance export</div></div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sidebar-label">CSV format</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.7">Required: <code style="font-size:11px;background:var(--bg-secondary);padding:2px 5px;border-radius:4px">name, departure_city, role</code><br>Optional: <code style="font-size:11px;background:var(--bg-secondary);padding:2px 5px;border-radius:4px">class, passport, notes</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORT -->
+  <div id="content-report" class="app-body" style="display:none">
+    <div class="page-badge"><i class="ti ti-sparkles" style="font-size:10px"></i> Step 2 of 3 — AI travel plan</div>
+    <div class="alert alert-success"><i class="ti ti-check"></i><div>Travel plan generated for 6 travellers across 6 departure cities. Estimated saving vs manual search: <b>£650.</b></div></div>
+    <div class="alert alert-warn"><i class="ti ti-alert-triangle"></i><div><b>Price alert:</b> Milan → London fares rising fast. Book Marco Bianchi within 2 hours to hold the current rate of £287.</div></div>
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Total cost</div><div class="metric-val">£3,240</div><div class="metric-sub">vs £3,890 manual est.</div></div>
+      <div class="metric"><div class="metric-label">Saving</div><div class="metric-val">£650</div><div class="metric-sub">16.7% below budget</div></div>
+      <div class="metric"><div class="metric-label">Travellers</div><div class="metric-val">6 / 6</div><div class="metric-sub">All options found</div></div>
+      <div class="metric"><div class="metric-label">Booked</div><div class="metric-val" id="report-booked-count">0 / 6</div><div class="metric-sub" id="report-booked-sub">Pending</div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div style="font-size:15px;font-weight:500">Traveller itineraries</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline" style="font-size:12px;padding:5px 12px"><i class="ti ti-download"></i> Export PDF</button>
+          <button class="btn btn-outline" style="font-size:12px;padding:5px 12px"><i class="ti ti-mail"></i> Email all</button>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th style="width:34px"></th><th>Traveller</th><th>Route</th><th>Flight</th><th>Price</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="report-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-solid" onclick="showAppTab('tracker')" style="padding:10px 20px">View booking tracker <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- TRACKER -->
+  <div id="content-tracker" class="app-body" style="display:none">
+    <div class="page-badge"><i class="ti ti-chart-bar" style="font-size:10px"></i> Step 3 of 3 — booking tracker</div>
+    <div class="metric-grid">
+      <div class="metric"><div class="metric-label">Total committed</div><div class="metric-val" id="t-committed">£0</div><div class="metric-sub">of £3,600 budget</div></div>
+      <div class="metric"><div class="metric-label">Confirmed</div><div class="metric-val" id="t-confirmed">0</div><div class="metric-sub">travellers booked</div></div>
+      <div class="metric"><div class="metric-label">Pending</div><div class="metric-val" id="t-pending">6</div><div class="metric-sub">to be booked</div></div>
+      <div class="metric"><div class="metric-label">Budget remaining</div><div class="metric-val" id="t-remaining">£3,600</div><div class="metric-sub">unallocated</div></div>
+    </div>
+    <div class="prog-wrap">
+      <div class="prog-header"><span style="font-size:13px;font-weight:500">Booking progress</span><span id="t-prog-label">0 of 6 confirmed</span></div>
+      <div class="prog-track"><div class="prog-fill" id="t-prog-fill" style="width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div style="font-size:15px;font-weight:500">Booking confirmations</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline" style="font-size:12px;padding:5px 12px"><i class="ti ti-download"></i> Finance export</button>
+          <button class="btn btn-solid" style="font-size:12px;padding:5px 12px"><i class="ti ti-file-text"></i> Full PDF</button>
+        </div>
+      </div>
+      <div id="tracker-rows"></div>
+    </div>
+    <div class="amount-box">
+      <div class="amount-row"><span>Economy bookings (5)</span><span id="eco-amt">£0</span></div>
+      <div class="amount-row"><span>Business class (1)</span><span id="biz-amt">£0</span></div>
+      <div class="amount-row"><span>AI saving vs manual</span><span style="color:var(--green-text)">− £650</span></div>
+      <div class="amount-row total"><span>Total travel spend</span><span id="grand-amt">£0</span></div>
+    </div>
+  </div>
+
+  <!-- ACCOUNT -->
+  <div id="content-account" class="app-body" style="display:none">
+    <div class="page-badge"><i class="ti ti-settings" style="font-size:10px"></i> Account settings</div>
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:1.5rem">
+        <div class="av av-d" style="width:48px;height:48px;font-size:15px;border-radius:50%">LS</div>
+        <div>
+          <div style="font-size:16px;font-weight:500">Laura Simmons</div>
+          <div style="font-size:12px;color:var(--text-tertiary)">laura@archipelago-productions.com</div>
+          <span class="badge badge-blue" style="margin-top:5px">Pro trial · 11 days left</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:14px;font-weight:500;margin-bottom:1rem">Company profile</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Company name</label><input type="text" value="Archipelago Productions"></div>
+        <div class="form-group"><label class="form-label">Industry</label><select><option>Film & TV production</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Default budget per person</label><input type="text" value="£600"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">Default travel class</label><select><option>Economy</option></select></div>
+    </div>
+    <div class="card">
+      <div style="font-size:14px;font-weight:500;margin-bottom:4px">Subscription</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:1rem">Currently on 14-day free trial</div>
+      <div class="plan-grid">
+        <div class="plan-card featured">
+          <span class="badge badge-blue" style="margin-bottom:8px;display:inline-flex">Current plan</span>
+          <div class="plan-name">Starter</div>
+          <div class="plan-desc">Up to 15 travellers per report</div>
+          <div class="plan-price">£499 <span>/ month</span></div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name" style="margin-top:30px">Professional</div>
+          <div class="plan-desc">Up to 60 travellers per report</div>
+          <div class="plan-price">£1,499 <span>/ month</span></div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-solid btn-full" style="padding:12px"><i class="ti ti-check"></i> Save changes</button>
+  </div>
+
+</div>
+
+<script>
+const crew = [
+  {id:'JC',name:'James Carter',role:'DOP',av:'av-a',from:'Edinburgh',airline:'British Airways',dep:'11:30',arr:'12:45',price:142,urgent:false,biz:false},
+  {id:'SR',name:'Sofia Reyes',role:'Production Designer',av:'av-b',from:'Paris CDG',airline:'Eurostar',dep:'11:01',arr:'13:13',price:89,urgent:false,biz:false},
+  {id:'MB',name:'Marco Bianchi',role:'Sound Supervisor',av:'av-c',from:'Milan MXP',airline:'British Airways',dep:'08:20',arr:'10:05',price:287,urgent:true,biz:false},
+  {id:'AK',name:'Aisha Khan',role:'Exec Producer',av:'av-d',from:'Dubai DXB',airline:'British Airways',dep:'09:45',arr:'14:00',price:1180,urgent:false,biz:true},
+  {id:'TM',name:'Tom Mercier',role:'Gaffer',av:'av-e',from:'Amsterdam AMS',airline:'KLM',dep:'13:10',arr:'13:40',price:164,urgent:false,biz:false},
+  {id:'LP',name:'Lucia Peral',role:'Costume Designer',av:'av-f',from:'Barcelona BCN',airline:'Vueling',dep:'09:30',arr:'11:30',price:118,urgent:false,biz:false}
+];
+const booked = {};
+
+function showScreen(s) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById('screen-'+s).classList.add('active');
+  document.getElementById('app-tabs').classList.toggle('visible', s==='app');
+  document.getElementById('nav-public').style.display = s==='app' ? 'none' : 'flex';
+  document.getElementById('nav-app').style.display = s==='app' ? 'flex' : 'none';
+}
+
+function showAppTab(t) {
+  showScreen('app');
+  ['builder','report','tracker','account'].forEach(n => {
+    document.getElementById('content-'+n).style.display = n===t ? 'block' : 'none';
+    document.getElementById('tab-'+n).classList.toggle('active', n===t);
+  });
+  if(t==='report') renderReport();
+  if(t==='tracker') renderTracker();
+}
+
+function goToApp() { showAppTab('builder'); }
+
+function markBooked(id) {
+  booked[id] = true;
+  renderReport();
+  renderTracker();
+}
+
+function renderReport() {
+  const n = Object.keys(booked).length;
+  document.getElementById('report-booked-count').textContent = n+' / 6';
+  document.getElementById('report-booked-sub').textContent = n===6 ? 'All booked!' : 'Pending';
+  document.getElementById('report-tbody').innerHTML = crew.map(t => `
+    <tr>
+      <td><div class="av ${t.av}">${t.id}</div></td>
+      <td><div style="font-size:13px;font-weight:500">${t.name}</div><div style="font-size:11px;color:var(--text-tertiary)">${t.role}</div></td>
+      <td style="font-size:12px;color:var(--text-secondary)">${t.from} → London</td>
+      <td style="font-size:12px">${t.airline} · ${t.dep}–${t.arr}${t.urgent?' <span class="badge badge-red">Urgent</span>':''}</td>
+      <td style="font-weight:500">£${t.price}</td>
+      <td>${booked[t.id]?'<span class="badge badge-green"><i class="ti ti-check"></i> Booked</span>':'<span class="badge badge-gray">Pending</span>'}</td>
+      <td>${booked[t.id]?'<span style="font-size:11px;color:var(--text-tertiary)">Done</span>':'<button class="btn btn-solid" style="font-size:11px;padding:4px 10px" onclick="markBooked(\''+t.id+'\')">Book <i class="ti ti-external-link"></i></button>'}</td>
+    </tr>`).join('');
+}
+
+function renderTracker() {
+  const n = Object.keys(booked).length;
+  const spent = crew.filter(t=>booked[t.id]).reduce((s,t)=>s+t.price,0);
+  const bizSpent = crew.filter(t=>booked[t.id]&&t.biz).reduce((s,t)=>s+t.price,0);
+  document.getElementById('t-committed').textContent = '£'+spent.toLocaleString();
+  document.getElementById('t-confirmed').textContent = n;
+  document.getElementById('t-pending').textContent = 6-n;
+  document.getElementById('t-remaining').textContent = '£'+(3600-spent).toLocaleString();
+  document.getElementById('t-prog-fill').style.width = Math.round(n/6*100)+'%';
+  document.getElementById('t-prog-label').textContent = n+' of 6 confirmed';
+  document.getElementById('eco-amt').textContent = '£'+(spent-bizSpent).toLocaleString();
+  document.getElementById('biz-amt').textContent = '£'+bizSpent.toLocaleString();
+  document.getElementById('grand-amt').textContent = '£'+spent.toLocaleString();
+  document.getElementById('tracker-rows').innerHTML = crew.map(t=>`
+    <div class="conf-row">
+      <div class="av ${t.av}">${t.id}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:500">${t.name}</div>
+        <div style="font-size:11px;color:var(--text-tertiary)">${t.from} → London · £${t.price}</div>
+      </div>
+      ${booked[t.id]
+        ? `<input class="conf-input" placeholder="Ref. number..." style="width:140px"><span class="badge badge-green"><i class="ti ti-check"></i> Booked</span>`
+        : `<span class="badge badge-amber">Pending</span><button class="btn btn-solid" style="font-size:11px;padding:5px 10px" onclick="markBooked('${t.id}')">Mark booked</button>`}
+    </div>`).join('');
+}
+
+renderReport();
+renderTracker();
+</script>
+</body>
+</html>
